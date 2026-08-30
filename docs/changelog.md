@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### 修复
+
+- **安卓 15 全面屏下页面内容与状态栏重叠**:壳把状态栏/手势条高度注入 CSS 变量 `--sat`/`--sab`,六处贴边留白(页面顶、Tab 栏、FAB、Snackbar、弹层、页底)按变量留白;网页版变量默认 0 不受影响
+
 ### 新增
 
 - **字体本地化,摆脱 CDN**:Lora + Noto Sans SC 的 108 个 woff2 分块(4.5MB)存入仓库 `fonts/`,由 `css/fonts.css` 提供 @font-face(保留 unicode-range 按需分块);页面不再访问 fonts.googleapis.com / gstatic,APK 内也能用上真字体
