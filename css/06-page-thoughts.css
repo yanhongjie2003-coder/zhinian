@@ -36,13 +36,13 @@
 .switch input:checked + .knob::after{transform:translateX(18px)}
 
 /* 添加念头:悬浮圆钮(念头页右下角,悬在 Tab 栏上方——给最高频的操作) */
-.fab{position:absolute; right:20px; bottom:92px; z-index:25; width:54px; height:54px; border-radius:50%;
+.fab{position:absolute; right:20px; bottom:calc(92px + var(--sab,0px)); z-index:25; width:54px; height:54px; border-radius:50%;
   background:var(--primary); color:var(--on-primary); display:none; align-items:center; justify-content:center;
   box-shadow:0 8px 20px rgba(124,58,237,.40); transition:transform .15s}
 .fab:active{transform:scale(.92)}
 
 /* 念头页内容底部多留一些,滚动到底时最后一行不会被悬浮钮盖住 */
-#scr-thoughts{padding-bottom:160px}
+#scr-thoughts{padding-bottom:calc(160px + var(--sab,0px))}
 
 /* 归档列表里的「恢复」圆钮(点它把念头搬回念头列表) */
 .unbtn{flex:none; width:42px; height:42px; border-radius:50%;

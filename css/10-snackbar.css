@@ -5,7 +5,7 @@
  * 位置在 Tab 栏(bottom:92px)之上,不会遮住 Tab。
  * ============================================================ */
 
-.snackbar{position:absolute; left:16px; right:16px; bottom:92px; z-index:40;
+.snackbar{position:absolute; left:16px; right:16px; bottom:calc(92px + var(--sab,0px)); z-index:40;
   background:var(--snack-bg); color:var(--snack-text); border-radius:14px;
   padding:13px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;
   font-size:13.5px; box-shadow:0 8px 26px rgba(0,0,0,.3);

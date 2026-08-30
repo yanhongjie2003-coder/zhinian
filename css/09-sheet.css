@@ -13,7 +13,7 @@
 .sheetwrap.open .scrim{opacity:1}
 
 /* 弹层面板:默认滑到屏幕下方(translateY 105%),打开时归位 */
-.sheet{position:absolute; left:0; right:0; bottom:0; background:var(--card);
+.sheet{position:absolute; left:0; right:0; bottom:var(--sab,0px); background:var(--card);
   border-radius:26px 26px 0 0; padding:12px 22px 34px; transform:translateY(105%);
   transition:transform .32s cubic-bezier(.2,.9,.3,1); border-top:1px solid var(--border)}
 .sheetwrap.open .sheet{transform:none}
