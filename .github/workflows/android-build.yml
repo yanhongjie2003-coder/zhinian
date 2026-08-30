@@ -1,0 +1,99 @@
+name: Android Build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync web app into Android assets
+        run: |
+          rm -rf android/app/src/main/assets
+          mkdir -p android/app/src/main/assets
+          cp -r index.html css js android/app/src/main/assets/
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Cache debug keystore (保持各次构建签名一致,支持覆盖安装)
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: zhinian-debug-keystore
+
+      - name: Build debug APK
+        run: gradle -p android assembleDebug --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zhinian-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  # 推送 v* 标签时:构建并自动创建 GitHub Release,挂上 APK
+  release:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync web app into Android assets
+        run: |
+          rm -rf android/app/src/main/assets
+          mkdir -p android/app/src/main/assets
+          cp -r index.html css js android/app/src/main/assets/
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Cache debug keystore
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: zhinian-debug-keystore
+
+      - name: Build debug APK
+        run: gradle -p android assembleDebug --no-daemon
+
+      - name: Create Release and upload APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          jq -n --arg t "$TAG" --arg sha "$GITHUB_SHA" \
+            '{tag_name:$t, target_commitish:$sha, name:("止念 "+$t), generate_release_notes:true}' > release.json
+          curl -sf -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" -d @release.json > /dev/null || true
+          RID=$(curl -sf -H "Authorization: token $GH_TOKEN" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/tags/$TAG" | jq -r .id)
+          curl -sf -X POST -H "Authorization: token $GH_TOKEN" -H "Content-Type: application/vnd.android.package-archive" \
+            --data-binary "@android/app/build/outputs/apk/debug/app-debug.apk" \
+            "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RID/assets?name=zhinian-$TAG.apk"
+          echo "Release ready: $TAG"
