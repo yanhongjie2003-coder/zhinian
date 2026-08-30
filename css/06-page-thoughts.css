@@ -1,0 +1,51 @@
+/* ============================================================
+ * 06-page-thoughts.css — 念头管理页专属样式
+ * 管:页头(标题+圆形加号)、念头行(点行进详情)、
+ *     启用/暂停开关。
+ * ============================================================ */
+
+/* 页头:左边大标题,右边按钮组 */
+.pagehead{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px}
+.pagehead .t{font-family:'Lora',Georgia,serif; font-size:24px; font-weight:600; color:var(--text)}
+.pagehead .actions{display:flex; align-items:center; gap:10px}
+.iconbtn{width:46px;height:46px;border-radius:50%;background:var(--primary);color:var(--on-primary);
+  display:flex;align-items:center;justify-content:center; box-shadow:0 6px 16px rgba(124,58,237,.35); transition:transform .15s}
+.iconbtn:active{transform:scale(.92)}
+.iconbtn.ghost{background:var(--primary-soft); color:var(--primary); box-shadow:none; position:relative}
+.mini-badge{position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; padding:0 4px;
+  border-radius:9px; background:var(--snack-bg); color:var(--snack-text);
+  font-size:10.5px; font-weight:700; line-height:18px; text-align:center}
+.mini-badge:empty{display:none}                             /* 没有归档时不显示角标 */
+
+/* 念头行:符号圆 + 名称 + 累计次数 + 开关 + 箭头;点整行进详情 */
+.trow{display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--border);
+  border-radius:18px; padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:opacity .2s; box-shadow:var(--shadow)}
+.trow.paused{opacity:.55}                                  /* 暂停中的念头整行变淡 */
+.trow .avatar{width:42px;height:42px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+.trow .mid{flex:1; min-width:0}
+.trow .name{font-size:15px;font-weight:600;color:var(--text)}
+.trow .meta{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* 开关(暂停/恢复):原生 checkbox + 纯 CSS 画的滑块 */
+.switch{position:relative; width:46px; height:28px; flex:none}
+.switch input{position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; margin:0} /* 真正可点的是这个透明的 input,它盖住整个开关 */
+.switch .knob{position:absolute; inset:0; border-radius:999px; background:var(--border-strong); transition:background .2s; pointer-events:none} /* 滑块只是装饰,不挡点击(否则点它会冒泡到整行、误开详情页) */
+.switch .knob::after{content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%;
+  background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.25); transition:transform .2s}
+.switch input:checked + .knob{background:var(--accent)}     /* 勾选 = 启用,变正念绿 */
+.switch input:checked + .knob::after{transform:translateX(18px)}
+
+/* 添加念头:悬浮圆钮(念头页右下角,悬在 Tab 栏上方——给最高频的操作) */
+.fab{position:absolute; right:20px; bottom:92px; z-index:25; width:54px; height:54px; border-radius:50%;
+  background:var(--primary); color:var(--on-primary); display:none; align-items:center; justify-content:center;
+  box-shadow:0 8px 20px rgba(124,58,237,.40); transition:transform .15s}
+.fab:active{transform:scale(.92)}
+
+/* 念头页内容底部多留一些,滚动到底时最后一行不会被悬浮钮盖住 */
+#scr-thoughts{padding-bottom:160px}
+
+/* 归档列表里的「恢复」圆钮(点它把念头搬回念头列表) */
+.unbtn{flex:none; width:42px; height:42px; border-radius:50%;
+  background:var(--primary-soft); color:var(--primary);
+  display:flex; align-items:center; justify-content:center; transition:transform .15s}
+.unbtn:active{transform:scale(.9)}

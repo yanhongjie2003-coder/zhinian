@@ -1,0 +1,47 @@
+/* ============================================================
+ * 04-page-home.css — 记录页(首页)专属样式
+ * 管:今日总览条、念头卡片(整卡可点)、点击涟漪、
+ *     数字弹跳动画、空状态。
+ * ============================================================ */
+
+/* 今日总览条:左"今日 N 次"大数字 + 右"连续 M 天"chip */
+.today-bar{display:flex; align-items:center; justify-content:space-between; gap:10px;
+  background:var(--card); border:1px solid var(--border); border-radius:18px; padding:16px 18px;
+  box-shadow:var(--shadow); margin-bottom:18px}
+.today-bar .num{font-family:'Lora',Georgia,serif; font-size:34px; font-weight:600; color:var(--text); line-height:1}
+.today-bar .num small{font-family:'Noto Sans SC',sans-serif; font-size:12.5px; font-weight:400; color:var(--muted); margin-left:6px}
+
+/* 念头卡片:整个卡片都是计数按钮,点击区远超 48dp */
+.tcard{position:relative; overflow:hidden; display:flex; align-items:center; gap:14px;
+  background:var(--card); border:1px solid var(--border); border-radius:20px;
+  padding:16px; margin-bottom:12px; cursor:pointer; user-select:none; -webkit-user-select:none;
+  transition:transform .15s, box-shadow .2s; box-shadow:var(--shadow)}
+.tcard:active{transform:scale(.985)}                       /* 按下时整卡轻微缩小,给"按到了"的反馈 */
+.tcard .avatar{width:46px; height:46px; border-radius:16px; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:17px}                        /* 左侧圆形符号:念头首字 + 专属浅色底 */
+.tcard .mid{flex:1; min-width:0}
+.tcard .name{font-size:15.5px; font-weight:600; color:var(--text); margin-bottom:3px}
+.tcard .meta{font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:8px}
+.tcard .plus{flex:none; width:54px; height:54px; border-radius:50%;
+  background:var(--primary); color:var(--on-primary);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 16px rgba(124,58,237,.35); transition:transform .18s}
+.tcard:active .plus{transform:scale(.9)}
+
+/* 涟漪:点击时从手指位置扩散的圆(js/09-effects.js 动态创建这个节点) */
+.tcard .ripple{position:absolute; border-radius:50%; background:var(--primary); opacity:.14;
+  transform:scale(0); animation:rip .55s ease-out forwards; pointer-events:none}
+@keyframes rip{to{transform:scale(2.6); opacity:0}}
+
+/* 数字弹跳:计数 +1 时数字先放大再回位(240ms) */
+.pop{display:inline-block; animation:pop .24s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{40%{transform:scale(1.32)} 100%{transform:scale(1)}}
+
+/* 空状态:一条念头都没有时,引导用户写下第一个 */
+.empty{ text-align:center; padding:56px 24px 20px; color:var(--muted)}
+.empty .cloudwrap{width:84px;height:84px;border-radius:50%;background:var(--primary-soft);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.empty .cloudwrap .ic{width:36px;height:36px;color:var(--primary)}
+.empty h3{font-size:16.5px; color:var(--text); margin-bottom:8px}
+.empty p{font-size:13px; line-height:1.8; margin-bottom:20px}

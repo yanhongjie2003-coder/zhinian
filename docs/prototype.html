@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>止念 · 念头计数器 — 初版交互原型</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========== Design Tokens(源自 ui-ux-pro-max 设计系统检索) ========== */
+  :root{
+    --primary:#7C3AED; --on-primary:#FFFFFF; --primary-soft:rgba(124,58,237,.10);
+    --accent:#059669; --accent-text:#047857; --accent-soft:rgba(5,150,105,.12);
+    --bg:#FAF5FF; --card:#FFFFFF; --card-2:#FDFBFF;
+    --text:#0F172A; --muted:#475569; --faint:#8A8AA3;
+    --border:#EFE7FC; --border-strong:#E2D6F8;
+    --danger:#DC2626;
+    --t1:#7C3AED; --t2:#0D9488; --t3:#D97706; --t4:#E11D48;
+    --t1-soft:rgba(124,58,237,.12); --t2-soft:rgba(13,148,136,.12);
+    --t3-soft:rgba(217,119,6,.12); --t4-soft:rgba(225,29,72,.10);
+    --heat0:#F1E9FC; --heat1:#DCCBFA; --heat2:#BC9DF5; --heat3:#9A6FEE; --heat4:#7C3AED;
+    --scrim:rgba(23,16,40,.45);
+    --snack-bg:#241E33; --snack-text:#F4F0FF;
+    --shadow:0 10px 30px rgba(76,45,140,.10);
+    --tabbar-bg:rgba(255,255,255,.92);
+  }
+  [data-theme="dark"]{
+    --primary:#A78BFA; --on-primary:#241543; --primary-soft:rgba(167,139,250,.14);
+    --accent:#34D399; --accent-text:#6EE7B7; --accent-soft:rgba(52,211,153,.14);
+    --bg:#16141D; --card:#1F1B29; --card-2:#231F30;
+    --text:#F2EFFA; --muted:#A9A3BC; --faint:#6E6883;
+    --border:#2C2739; --border-strong:#3B3450;
+    --danger:#F87171;
+    --t1:#A78BFA; --t2:#2DD4BF; --t3:#FBBF24; --t4:#FB7185;
+    --t1-soft:rgba(167,139,250,.16); --t2-soft:rgba(45,212,191,.14);
+    --t3-soft:rgba(251,191,36,.14); --t4-soft:rgba(251,113,133,.14);
+    --heat0:#232030; --heat1:#3A2C5C; --heat2:#513C80; --heat3:#7348BE; --heat4:#8F6BE8;
+    --scrim:rgba(5,3,12,.60);
+    --snack-bg:#EDE7FB; --snack-text:#241E33;
+    --shadow:0 10px 30px rgba(0,0,0,.45);
+    --tabbar-bg:rgba(31,27,41,.92);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-font-smoothing:antialiased}
+  body{
+    font-family:'Noto Sans SC','Microsoft YaHei',sans-serif;
+    background:#0F0B1A; color:#EDE9F8;
+    min-height:100vh; display:flex; gap:56px; align-items:center; justify-content:center;
+    padding:48px 24px;
+  }
+  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit}
+  input{font-family:inherit}
+  svg{display:block}
+  .ic{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+  /* ========== 左侧说明 ========== */
+  .side{width:400px; max-width:92vw}
+  .side .kicker{font-size:12px; letter-spacing:.35em; color:#A78BFA; font-weight:600; margin-bottom:14px}
+  .side h1{font-family:'Lora',Georgia,serif; font-size:44px; line-height:1.15; margin-bottom:6px}
+  .side h1 em{font-style:normal; color:#A78BFA}
+  .side .sub{font-size:15px; color:#B7B0CC; line-height:1.8; margin:14px 0 30px}
+  .side .block{border-top:1px solid rgba(167,139,250,.18); padding:18px 0}
+  .side .block h3{font-size:13px; color:#A78BFA; letter-spacing:.12em; margin-bottom:10px; font-weight:600}
+  .side .block p{font-size:13.5px; color:#C9C3DC; line-height:1.9}
+  .side .hint{margin-top:26px; background:rgba(167,139,250,.10); border:1px solid rgba(167,139,250,.25);
+    border-radius:14px; padding:14px 16px; font-size:13px; color:#D8CCF6; line-height:1.8}
+
+  /* ========== 舞台与工具栏 ========== */
+  .stage{display:flex; flex-direction:column; align-items:center; gap:18px}
+  .toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center}
+  .pill{padding:9px 18px; border-radius:999px; font-size:13px; color:#C9C3DC;
+    border:1px solid rgba(167,139,250,.28); background:rgba(167,139,250,.07); transition:all .2s}
+  .pill:hover{background:rgba(167,139,250,.16)}
+  .pill.on{background:#A78BFA; color:#241543; border-color:#A78BFA; font-weight:600}
+  .pill.icon-p{padding:9px 12px; display:flex; align-items:center}
+  .pill .ic{width:17px;height:17px}
+
+  /* ========== 手机框 ========== */
+  .phone{
+    width:392px; height:846px; border-radius:46px; background:var(--bg);
+    border:9px solid #08060D; outline:1px solid #2E2840;
+    position:relative; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.55);
+    transition:background .3s; color-scheme:light;
+  }
+  .statusbar{position:absolute; top:0; left:0; right:0; height:44px; z-index:30;
+    display:flex; align-items:center; justify-content:space-between; padding:0 26px 0 30px;
+    font-size:14px; font-weight:600; color:var(--text); pointer-events:none}
+  .statusbar .right{display:flex; gap:6px; align-items:center}
+  .notch{position:absolute; top:12px; left:50%; transform:translateX(-50%);
+    width:110px; height:26px; border-radius:16px; background:#08060D; z-index:31}
+
+  .screen{position:absolute; inset:0; overflow-y:auto; overflow-x:hidden;
+    padding:58px 20px 110px; display:none; scrollbar-width:none}
+  .screen::-webkit-scrollbar{display:none}
+  .screen.active{display:block; animation:screenIn .32s cubic-bezier(.2,.8,.3,1)}
+  @keyframes screenIn{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+  .screen.no-pad-b{padding-bottom:28px}
+
+  /* Tab 栏 */
+  .tabbar{position:absolute; left:0; right:0; bottom:0; z-index:30;
+    background:var(--tabbar-bg); backdrop-filter:blur(14px);
+    border-top:1px solid var(--border); display:flex; padding:8px 8px 24px}
+  .tab{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:6px 0 2px; color:var(--muted); font-size:11px; border-radius:14px; min-height:48px; transition:color .2s}
+  .tab .ic{width:23px;height:23px}
+  .tab.on{color:var(--primary); font-weight:600}
+  .homebar{position:absolute; bottom:7px; left:50%; transform:translateX(-50%);
+    width:120px; height:4px; border-radius:4px; background:var(--faint); opacity:.55; z-index:31; pointer-events:none}
+
+  /* ========== 通用组件 ========== */
+  .card{background:var(--card); border:1px solid var(--border); border-radius:20px; box-shadow:var(--shadow)}
+  .h-date{font-size:13px; color:var(--muted); margin-bottom:4px}
+  .h-title{font-family:'Lora','Noto Serif SC',Georgia,serif; font-size:25px; font-weight:600; color:var(--text); line-height:1.35; margin-bottom:18px}
+  .h-title .dot{color:var(--primary)}
+
+  .chip{display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px;
+    font-size:12.5px; font-weight:600; background:var(--accent-soft); color:var(--accent-text)}
+  .chip .ic{width:14px;height:14px}
+
+  .snackbar{position:absolute; left:16px; right:16px; bottom:92px; z-index:40;
+    background:var(--snack-bg); color:var(--snack-text); border-radius:14px;
+    padding:13px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:13.5px; box-shadow:0 8px 26px rgba(0,0,0,.3);
+    transform:translateY(16px); opacity:0; pointer-events:none; transition:all .26s cubic-bezier(.2,.8,.3,1)}
+  .snackbar.show{transform:none; opacity:1; pointer-events:auto}
+  .snackbar .undo{display:flex; align-items:center; gap:5px; font-weight:700; color:var(--primary);
+    padding:8px 6px; font-size:13.5px; border-radius:8px}
+  [data-theme="dark"] .snackbar .undo{color:#7C3AED}
+  .snackbar .undo .ic{width:16px;height:16px}
+
+  /* 记录页 */
+  .today-bar{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--card); border:1px solid var(--border); border-radius:18px; padding:16px 18px;
+    box-shadow:var(--shadow); margin-bottom:18px}
+  .today-bar .num{font-family:'Lora',Georgia,serif; font-size:34px; font-weight:600; color:var(--text); line-height:1}
+  .today-bar .num small{font-family:'Noto Sans SC',sans-serif; font-size:12.5px; font-weight:400; color:var(--muted); margin-left:6px}
+  .tcard{position:relative; overflow:hidden; display:flex; align-items:center; gap:14px;
+    background:var(--card); border:1px solid var(--border); border-radius:20px;
+    padding:16px; margin-bottom:12px; cursor:pointer; user-select:none; -webkit-user-select:none;
+    transition:transform .15s, box-shadow .2s; box-shadow:var(--shadow)}
+  .tcard:active{transform:scale(.985)}
+  .tcard .avatar{width:46px; height:46px; border-radius:16px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:17px}
+  .tcard .mid{flex:1; min-width:0}
+  .tcard .name{font-size:15.5px; font-weight:600; color:var(--text); margin-bottom:3px}
+  .tcard .meta{font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:8px}
+  .tcard .meta .spark{flex:none}
+  .tcard .plus{flex:none; width:54px; height:54px; border-radius:50%;
+    background:var(--primary); color:var(--on-primary);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 16px rgba(124,58,237,.35); transition:transform .18s}
+  .tcard:active .plus{transform:scale(.9)}
+  .tcard .ripple{position:absolute; border-radius:50%; background:var(--primary); opacity:.14;
+    transform:scale(0); animation:rip .55s ease-out forwards; pointer-events:none}
+  @keyframes rip{to{transform:scale(2.6); opacity:0}}
+  .pop{display:inline-block; animation:pop .24s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes pop{40%{transform:scale(1.32)} 100%{transform:scale(1)}}
+
+  .empty{ text-align:center; padding:56px 24px 20px; color:var(--muted)}
+  .empty .cloudwrap{width:84px;height:84px;border-radius:50%;background:var(--primary-soft);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+  .empty .cloudwrap .ic{width:36px;height:36px;color:var(--primary)}
+  .empty h3{font-size:16.5px; color:var(--text); margin-bottom:8px}
+  .empty p{font-size:13px; line-height:1.8; margin-bottom:20px}
+  .btn{display:inline-flex; align-items:center; gap:7px; background:var(--primary); color:var(--on-primary);
+    padding:13px 26px; border-radius:999px; font-size:14.5px; font-weight:600; transition:transform .15s, opacity .2s}
+  .btn:active{transform:scale(.96)}
+  .btn.ghost{background:var(--primary-soft); color:var(--primary)}
+
+  /* 统计页 */
+  .seg{display:flex; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:4px; margin-bottom:16px}
+  .seg button{flex:1; padding:9px 0; border-radius:999px; font-size:13.5px; color:var(--muted); font-weight:500; transition:all .2s}
+  .seg button.on{background:var(--primary); color:var(--on-primary); font-weight:600}
+  .sumrow{display:flex; gap:10px; margin-bottom:16px}
+  .sum{flex:1; background:var(--card); border:1px solid var(--border); border-radius:18px; padding:14px 16px; box-shadow:var(--shadow)}
+  .sum .v{font-family:'Lora',Georgia,serif; font-size:22px; font-weight:600; color:var(--text)}
+  .sum .k{font-size:11.5px; color:var(--muted); margin-top:3px; white-space:nowrap}
+  .sum .k b{color:var(--muted); font-weight:600}
+  .panel{background:var(--card); border:1px solid var(--border); border-radius:20px; padding:18px; box-shadow:var(--shadow); margin-bottom:16px}
+  .panel h4{font-size:14px; font-weight:600; color:var(--text); margin-bottom:2px}
+  .panel .cap{font-size:11.5px; color:var(--muted); margin-bottom:14px}
+  .legend{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); margin-top:12px}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .calm-note{text-align:center; font-size:12.5px; color:var(--muted); padding:6px 0 2px; line-height:1.8}
+  .calm-note .ic{width:14px;height:14px;display:inline-block;vertical-align:-2px;margin-right:4px;color:var(--accent)}
+
+  /* 念头页 */
+  .pagehead{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px}
+  .pagehead .t{font-family:'Lora',Georgia,serif; font-size:24px; font-weight:600; color:var(--text)}
+  .iconbtn{width:46px;height:46px;border-radius:50%;background:var(--primary);color:var(--on-primary);
+    display:flex;align-items:center;justify-content:center; box-shadow:0 6px 16px rgba(124,58,237,.35); transition:transform .15s}
+  .iconbtn:active{transform:scale(.92)}
+  .trow{display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--border);
+    border-radius:18px; padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:opacity .2s; box-shadow:var(--shadow)}
+  .trow.paused{opacity:.55}
+  .trow .avatar{width:42px;height:42px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+  .trow .mid{flex:1; min-width:0}
+  .trow .name{font-size:15px;font-weight:600;color:var(--text)}
+  .trow .meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .switch{position:relative; width:46px; height:28px; flex:none}
+  .switch input{position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; margin:0}
+  .switch .knob{position:absolute; inset:0; border-radius:999px; background:var(--border-strong); transition:background .2s}
+  .switch .knob::after{content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%;
+    background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.25); transition:transform .2s}
+  .switch input:checked + .knob{background:var(--accent)}
+  .switch input:checked + .knob::after{transform:translateX(18px)}
+
+  /* 详情页 */
+  .navbar{display:flex; align-items:center; gap:12px; margin-bottom:18px}
+  .backbtn{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;color:var(--text); flex:none}
+  .timeline{list-style:none}
+  .timeline li{display:flex; gap:12px; padding:9px 0; border-bottom:1px dashed var(--border); font-size:13.5px}
+  .timeline li:last-child{border-bottom:none}
+  .timeline .d{color:var(--muted); width:86px; flex:none}
+  .timeline .w{color:var(--text); flex:1}
+  .timeline .eye{color:var(--accent-text); display:flex; align-items:center}
+  .timeline .eye .ic{width:15px;height:15px}
+  .dangerlink{width:100%; text-align:center; color:var(--danger); font-size:13.5px; font-weight:600;
+    padding:14px 0; border-radius:16px; border:1px dashed var(--border-strong); margin-top:4px}
+
+  /* 底部弹层 */
+  .sheetwrap{position:absolute; inset:0; z-index:50; visibility:hidden}
+  .sheetwrap.open{visibility:visible}
+  .scrim{position:absolute; inset:0; background:var(--scrim); opacity:0; transition:opacity .28s}
+  .sheetwrap.open .scrim{opacity:1}
+  .sheet{position:absolute; left:0; right:0; bottom:0; background:var(--card);
+    border-radius:26px 26px 0 0; padding:12px 22px 34px; transform:translateY(105%);
+    transition:transform .32s cubic-bezier(.2,.9,.3,1); border-top:1px solid var(--border)}
+  .sheetwrap.open .sheet{transform:none}
+  .grab{width:40px;height:4px;border-radius:4px;background:var(--border-strong);margin:0 auto 16px}
+  .sheet h3{font-size:18px; font-weight:700; color:var(--text); margin-bottom:4px}
+  .sheet .cap{font-size:12.5px; color:var(--muted); margin-bottom:16px; line-height:1.7}
+  .field{background:var(--bg); border:1.5px solid var(--border-strong); border-radius:14px;
+    padding:14px 16px; font-size:15px; color:var(--text); width:100%; outline:none; transition:border .2s}
+  .field:focus{border-color:var(--primary)}
+  .field::placeholder{color:var(--faint)}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px}
+  .fchip{padding:9px 14px; border-radius:999px; font-size:13px; background:var(--primary-soft);
+    color:var(--primary); font-weight:500; transition:all .2s; border:1px solid transparent}
+  .fchip:hover{border-color:var(--primary)}
+  .sheet .btn{width:100%; justify-content:center}
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important; transition:none !important}
+  }
+  @media (max-width:1060px){
+    body{flex-direction:column; gap:36px; padding:32px 14px}
+    .side{width:392px; max-width:100%}
+    .side h1{font-size:34px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= 左侧产品说明 ================= -->
+<aside class="side">
+  <div class="kicker">ZHI NIAN · V1.0 CONCEPT</div>
+  <h1>止念<em>.</em><br>念头计数器</h1>
+  <p class="sub">不与念头对抗,而是数它、看见它。每当"不想要的念头"浮现,打开 App 轻点一次;数据在本地沉淀为日 / 周 / 月 / 年的可视化,让看不见的心理反刍,变成看得见的曲线。</p>
+  <div class="block"><h3>为什么是"计数"而不是"忍住"</h3><p>白熊效应:越压抑越反弹。正念中的"标记法"则轻轻认出念头、记下它、放它走。所以计数在这里不是失败记录,而是——每一次记录,都是一次成功的觉察。</p></div>
+  <div class="block"><h3>三条设计原则</h3><p>① 零摩擦:解锁到记录完 ≤ 2 秒,首页即计数页;<br>② 无羞耻感:无红色警告、无"破戒"字样;<br>③ 绝对隐私:全程离线,无账号无上传。</p></div>
+  <div class="block"><h3>原型包含的屏幕</h3><p>记录(首页)· 统计(日 / 周 / 月 / 年)· 念头管理 · 念头详情 · 添加念头弹层,共 4 屏 + 1 弹层,内置过去 10 个月演示数据,支持深色模式。</p></div>
+  <div class="hint">试试:点首页任意卡片计数(5 秒内可撤销)→ 切到"统计"看日 / 周 / 月 / 年视图 → 在"念头"页点右上 + 添加一条约定。</div>
+</aside>
+
+<!-- ================= 原型舞台 ================= -->
+<main class="stage">
+  <div class="toolbar" id="toolbar">
+    <button class="pill on" data-go="home">记录</button>
+    <button class="pill" data-go="stats">统计</button>
+    <button class="pill" data-go="thoughts">念头</button>
+    <button class="pill" data-go="detail">念头详情</button>
+    <button class="pill icon-p" id="themeBtn" title="切换深色模式"><span id="themeIc"></span></button>
+  </div>
+
+  <div class="phone" id="phone">
+    <div class="notch"></div>
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="right">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="4.5" y="5" width="3" height="7" rx="1"/><rect x="9" y="2.5" width="3" height="9.5" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 9.6a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2ZM8 5c1.9 0 3.6.75 4.9 1.96l-1.42 1.42A4.98 4.98 0 0 0 8 7a4.98 4.98 0 0 0-3.48 1.4L3.1 6.97A6.97 6.97 0 0 1 8 5Zm0-4.6c3.1 0 5.9 1.24 7.96 3.25l-1.42 1.42A9.23 9.23 0 0 0 8 2.4c-2.55 0-4.86 1.03-6.54 2.7L.04 3.68A11.2 11.2 0 0 1 8 .4Z"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><path d="M23 4v4c1-.3 1.6-1 1.6-2S24 4.3 23 4Z" fill="currentColor" opacity=".4"/></svg>
+      </span>
+    </div>
+
+    <!-- 记录(首页) -->
+    <section class="screen active" id="scr-home"></section>
+    <!-- 统计 -->
+    <section class="screen" id="scr-stats"></section>
+    <!-- 念头管理 -->
+    <section class="screen" id="scr-thoughts"></section>
+    <!-- 念头详情 -->
+    <section class="screen no-pad-b" id="scr-detail"></section>
+
+    <!-- Tab 栏 -->
+    <nav class="tabbar" id="tabbar">
+      <button class="tab on" data-go="home"><span class="ic-wrap" data-ic="tabcount"></span>记录</button>
+      <button class="tab" data-go="stats"><span class="ic-wrap" data-ic="chart"></span>统计</button>
+      <button class="tab" data-go="thoughts"><span class="ic-wrap" data-ic="cloud"></span>念头</button>
+    </nav>
+    <div class="homebar"></div>
+
+    <!-- 添加念头弹层 -->
+    <div class="sheetwrap" id="sheet">
+      <div class="scrim" data-action="close-sheet"></div>
+      <div class="sheet" role="dialog" aria-modal="true" aria-label="添加约定">
+        <div class="grab"></div>
+        <h3>写下一个约定</h3>
+        <p class="cap">用"不要……"的句式写下来。写下来不是为了忍住,而是为了在它再次浮现时,认得出它。</p>
+        <input class="field" id="newName" type="text" placeholder="例如:不要想过去的事" maxlength="24" aria-label="约定名称">
+        <div class="chips" id="chips"></div>
+        <button class="btn" data-action="add-thought"><span data-ic="plus"></span>添加约定</button>
+      </div>
+    </div>
+
+    <!-- Snackbar -->
+    <div class="snackbar" id="snack">
+      <span id="snackText"></span>
+      <button class="undo" id="snackUndo"><span data-ic="undo"></span>撤销</button>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ================= 图标(Lucide 风格,统一 1.75 描边) ================= */
+const IC = {
+  plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+  chevR:'<path d="m9 18 6-6-6-6"/>',
+  chevL:'<path d="m15 18-6-6 6-6"/>',
+  cloud:'<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>',
+  flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"/>',
+  eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+  tabcount:'<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  spark:'<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>'
+};
+function ic(name, size){ return `<svg class="ic" viewBox="0 0 24 24" ${size?`style="width:${size}px;height:${size}px"`:''} aria-hidden="true">${IC[name]}</svg>`; }
+document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = ic(el.dataset.ic));
+
+/* ================= 演示数据(seeded,可复现) ================= */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd = mulberry32(20260830);
+const DAY = 86400000;
+const dayStart = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+const today = dayStart(new Date());
+const dAgo = n => new Date(today.getTime() - n*DAY);
+const key = d => `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+
+const thoughts = [
+  {id:'t1', name:'不要想过去的事', ci:1, created:290, paused:false},
+  {id:'t2', name:'不要抱怨',       ci:2, created:290, paused:false},
+  {id:'t3', name:'睡前刷手机',     ci:3, created:180, paused:false},
+  {id:'t4', name:'不要自我否定',   ci:4, created:95,  paused:false},
+];
+const SUGGEST = ['不要想过去的事','不要抱怨','不要想 TA','睡前不刷手机','不要自我否定','不要熬夜'];
+
+let records = []; // {t, ts}
+(function gen(){
+  const base = {t1:3.4, t2:2.6, t3:2.3, t4:1.9};
+  for(let n=300; n>=1; n--){
+    const d = dAgo(n), dow = d.getDay();
+    thoughts.forEach(th => {
+      if(n > th.created) return;               // 早于创建日的天不生成
+      let rate = base[th.id] * (0.5 + 0.5*(n/300));          // 整体缓降趋势
+      if(dow===0 || dow===6) rate *= (th.id==='t3' ? 0.8 : 1.3); // 周末模式
+      let c = Math.round(rate * (0.35 + rnd()*1.5) * (rnd()<.06 ? 2.2 : 1));
+      c = Math.max(0, Math.min(9, c));
+      for(let i=0;i<c;i++){
+        const h = 7 + Math.floor(rnd()*16), m = Math.floor(rnd()*60);
+        const x = new Date(d); x.setHours(h, m, Math.floor(rnd()*60), 0);
+        records.push({t:th.id, ts:x.getTime()});
+      }
+    });
+  }
+  // 今天已有几条
+  [['t1',8,12],['t1',10,47],['t1',14,30],['t2',12,20],['t4',9,3]].forEach(([t,h,m])=>{
+    const x = new Date(today); x.setHours(h,m,30,0); records.push({t, ts:x.getTime()});
+  });
+})();
+
+/* ================= 统计辅助 ================= */
+const actives = () => thoughts.filter(t => !t.paused && !t.archived);
+const countDay = (d, tid) => {
+  const k = key(d); let n = 0;
+  for(const r of records){ if(tid && r.t!==tid) continue;
+    const dd = new Date(r.ts); if(key(dd)===k) n++; }
+  return n;
+};
+const rangeCount = (a, b, tid) => {
+  const s = dayStart(a).getTime(), e = dayStart(b).getTime(); let n=0;
+  for(const r of records){ if(tid && r.t!==tid) continue;
+    if(r.ts>=s && r.ts<e+DAY-1) n++; }
+  return n;
+};
+function streak(){
+  let s=0, d=new Date(today);
+  if(countDay(d)===0) d = dAgo(1);
+  while(countDay(d)>0){ s++; d = new Date(d.getTime()-DAY); }
+  return s;
+}
+const lastNDays = n => Array.from({length:n},(_,i)=>{ const d=dAgo(n-1-i); return {d, c:countDay(d)}; });
+const weekMonday = d => { const x=dayStart(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; };
+const colVar = ci => `var(--t${ci})`, colSoft = ci => `var(--t${ci}-soft)`;
+
+/* ================= SVG 图表 ================= */
+function sparkSVG(tid, color){
+  const v = lastNDays(7).map(x=>x.c!==undefined?countDay(x.d,tid):0);
+  const max = Math.max(...v,1), w=64, h=22, step=w/6;
+  const pts = v.map((c,i)=>`${(i*step).toFixed(1)},${(h-3-(c/max)*(h-6)).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" aria-hidden="true">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>`;
+}
+function barChartSVG(values, labels, hlIdx, color){
+  const W=318, H=168, padT=20, padB=24, bw=Math.floor(W/7)-12;
+  const max = Math.max(...values, 4);
+  let bars='';
+  values.forEach((c,i)=>{
+    const bh = Math.max(c/max*(H-padT-padB), c>0?5:2);
+    const x = i*(W/7)+6, y = H-padB-bh;
+    bars += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="7"
+      fill="${color||'var(--primary)'}" opacity="${i===hlIdx?1:.28}"></rect>
+      <text x="${x+bw/2}" y="${y-6}" text-anchor="middle" font-size="11" font-weight="${i===hlIdx?700:500}"
+        fill="${i===hlIdx?'var(--text)':'var(--muted)'}">${c}</text>
+      <text x="${x+bw/2}" y="${H-7}" text-anchor="middle" font-size="10.5"
+        fill="var(--muted)">${labels[i]}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="每日次数条形图">${bars}</svg>`;
+}
+function lineChartSVG(values, dateLabels){
+  const W=318, H=172, padT=22, padB=26, max=Math.max(...values,4);
+  const step = W/(values.length-1);
+  const pt = i => [i*step, H-padB-(values[i]/max)*(H-padT-padB)];
+  let line='', area='';
+  values.forEach((c,i)=>{ const [x,y]=pt(i); line += (i?` L${x.toFixed(1)},${y.toFixed(1)}`:`M${x.toFixed(1)},${y.toFixed(1)}`); });
+  area = line + ` L${W},${H-padB} L0,${H-padB} Z`;
+  const [ex,ey]=pt(values.length-1), [sx]=pt(0);
+  let grid='';
+  [0.33,0.66].forEach(f=>{ const y=padT+(H-padT-padB)*f;
+    grid+=`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="var(--border)" stroke-dasharray="3 4"/>`; });
+  let xl='';
+  dateLabels.forEach((lb,i)=>{ if(!lb) return;
+    xl+=`<text x="${i*step}" y="${H-7}" text-anchor="${i===0?'start':(i===values.length-1?'end':'middle')}" font-size="10.5" fill="var(--muted)">${lb}</text>`; });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="每日次数折线图">
+    ${grid}<path d="${area}" fill="var(--primary)" opacity=".16"/>
+    <path d="${line}" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${sx}" cy="${pt(0)[1]}" r="3" fill="var(--primary)" opacity=".55"/>
+    <circle cx="${ex}" cy="${ey}" r="4" fill="var(--primary)" stroke="var(--card)" stroke-width="2"/>
+    <text x="${Math.min(ex-8, W-4)}" y="${Math.max(ey-10,12)}" text-anchor="end" font-size="11.5" font-weight="700" fill="var(--text)">${values[values.length-1]}</text>
+    ${xl}</svg>`;
+}
+function heatSVG(tid){
+  const start = weekMonday(dAgo(364));
+  const cw=6, ch=6, W=53*cw, H=16+7*ch;
+  let cells='', lastM=-1, lastLx=-99, months='';
+  for(let wk=0; wk<53; wk++){
+    for(let dw=0; dw<7; dw++){
+      const d = new Date(start.getTime()+(wk*7+dw)*DAY);
+      if(d>today) continue;
+      if(dw===0 && d.getMonth()!==lastM){ lastM=d.getMonth();
+        const lx = wk*cw;
+        if(lx-lastLx>=32 && lx<W-26){ lastLx=lx;
+          months+=`<text x="${lx}" y="10" font-size="9" fill="var(--muted)">${d.getMonth()+1}月</text>`; } }
+      const c = countDay(d, tid);
+      const lv = c===0?0 : c<=2?1 : c<=5?2 : c<=8?3 : 4;
+      cells += `<rect x="${wk*cw}" y="${16+dw*ch}" width="5" height="5" rx="1.5" fill="var(--heat${lv})"><title>${d.getMonth()+1}月${d.getDate()}日 · ${c} 次</title></rect>`;
+    }
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="一年每日次数热力图">${months}${cells}</svg>`;
+}
+function distBars(counts){ // [{name,count,ci}]
+  const max = Math.max(...counts.map(c=>c.count), 1);
+  return counts.map(c=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="flex:none;width:96px;font-size:12.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:text-ellipsis">${c.name}</span>
+      <span style="flex:1;height:10px;border-radius:6px;background:var(--heat0);overflow:hidden">
+        <span style="display:block;height:100%;width:${(c.count/max*100).toFixed(1)}%;border-radius:6px;background:${colVar(c.ci)}"></span>
+      </span>
+      <span style="flex:none;width:30px;text-align:right;font-size:12.5px;font-weight:600;color:var(--muted)">${c.count}</span>
+    </div>`).join('');
+}
+
+/* ================= 页面渲染 ================= */
+let curScreen='home', curRange='day', detailId='t1', lastAdded=null, snackTimer=null, popTimer={};
+
+function renderHome(){
+  const el = document.getElementById('scr-home');
+  const list = actives();
+  const tTotal = countDay(today), wkTotal = rangeCount(weekMonday(today), today);
+  let html = `
+    <div class="h-date">${today.getMonth()+1}月${today.getDate()}日 · ${'周'+'日一二三四五六'[today.getDay()]}</div>
+    <div class="h-title">此刻,浮起了什么念头<span class="dot">?</span></div>
+    <div class="today-bar">
+      <div><span class="num" id="todayNum">${tTotal}<small>次 · 今日觉察</small></span></div>
+      <span class="chip">${ic('flame')} 连续 ${streak()} 天</span>
+    </div>`;
+  if(!list.length){
+    html += `<div class="empty">
+      <div class="cloudwrap">${ic('cloud')}</div>
+      <h3>写下一个你想放下的念头</h3>
+      <p>比如:不要想过去的事、不要抱怨。<br>当它再次浮现时,回到这里轻轻点一下。</p>
+      <button class="btn" data-action="open-sheet">${ic('plus')} 添加第一个约定</button>
+    </div>`;
+  } else {
+    list.forEach(th=>{
+      const c = countDay(today, th.id), wk = rangeCount(weekMonday(today), today, th.id);
+      html += `
+      <div class="tcard" data-action="count" data-thought="${th.id}" role="button" aria-label="记录一次:${th.name}" tabindex="0">
+        <span class="avatar" style="background:${colSoft(th.ci)};color:${colVar(th.ci)}">${th.name.slice(2,3)}</span>
+        <div class="mid">
+          <div class="name">${th.name}</div>
+          <div class="meta" style="white-space:nowrap">今日 <b data-cnt="${th.id}" style="color:var(--text)">${c}</b> 次 · 本周 ${wk} 次</div>
+          <div style="height:20px; margin-top:5px">${sparkSVG(th.id, colVar(th.ci))}</div>
+        </div>
+        <span class="plus">${ic('plus',22)}</span>
+      </div>`;
+    });
+    html += `<p class="calm-note">${ic('eye')}点一下卡片,就是一次觉察 · 点错了可撤销</p>`;
+  }
+  el.innerHTML = html;
+}
+
+function rangeMeta(){
+  const wkM = weekMonday(today);
+  switch(curRange){
+    case 'day':  return {label:'今天', total:countDay(today), len:1,
+      prev:rangeCount(dAgo(1),dAgo(1)), unit:'昨日对比', cap:'今日各念头觉察次数', chart:'day'};
+    case 'week': { const len=Math.round((today-wkM)/DAY)+1;
+      return {label:'本周', total:rangeCount(wkM,today), len,
+      prev:rangeCount(new Date(wkM.getTime()-7*DAY), new Date(wkM.getTime()-8*DAY+len*DAY)), cap:'本周每天次数(今日高亮)', chart:'week'}; }
+    case 'month':{ const days=lastNDays(30);
+      return {label:'近30天', total:days.reduce((s,x)=>s+x.c,0), len:30,
+      prev:rangeCount(dAgo(60),dAgo(31)), cap:'近 30 天趋势', chart:'month'}; }
+    case 'year': { const days=lastNDays(365);
+      return {label:'近一年', total:days.reduce((s,x)=>s+x.c,0), len:365,
+      prev:rangeCount(dAgo(730),dAgo(366)), cap:'过去 12 个月的觉察足迹', chart:'year'}; }
+  }
+}
+function renderStats(){
+  const el = document.getElementById('scr-stats');
+  const m = rangeMeta();
+  const avg = (m.total/m.len).toFixed(1);
+  let delta = '—';
+  if(m.prev>0){ const p=Math.round((m.total-m.prev)/m.prev*100); delta = (p>0?'+':'')+p+'%'; }
+  else if(m.total>0) delta = '新增';
+  const dist = thoughts.filter(t=>!t.archived).map(t=>({name:t.name, ci:t.ci, count:rangeCount(rangeStart(), today, t.id)}));
+
+  let chart='';
+  if(m.chart==='day'){
+    chart = `<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:16px">
+        <span style="font-family:'Lora',Georgia,serif;font-size:44px;font-weight:600;color:var(--text)">${m.total}</span>
+        <span style="font-size:13px;color:var(--muted)">次 · 今天</span></div>` + distBars(dist);
+  } else if(m.chart==='week'){
+    const monday = weekMonday(today);
+    const vals=[], labs=[], WK=['一','二','三','四','五','六','日']; let hl=0;
+    for(let i=0;i<7;i++){ const d=new Date(monday.getTime()+i*DAY);
+      vals.push(d<=today?countDay(d):0); labs.push(WK[i]);
+      if(key(d)===key(today)) hl=i; }
+    chart = barChartSVG(vals, labs, hl);
+  } else if(m.chart==='month'){
+    const days = lastNDays(30);
+    const labels = days.map((x,i)=> (i%7===0||i===29) ? `${x.d.getMonth()+1}/${x.d.getDate()}` : null);
+    chart = lineChartSVG(days.map(x=>x.c), labels);
+  } else {
+    chart = heatSVG() + `<div class="legend">少
+      <i style="background:var(--heat0)"></i><i style="background:var(--heat1)"></i><i style="background:var(--heat2)"></i><i style="background:var(--heat3)"></i><i style="background:var(--heat4)"></i>
+      多 <span style="margin-left:auto">每格 = 一天 · 悬停看数值</span></div>`;
+  }
+
+  el.innerHTML = `
+    <div class="h-date">统计</div>
+    <div class="h-title">看见,是改变的开始</div>
+    <div class="seg" role="tablist" aria-label="时间范围">
+      ${['day','week','month','year'].map(r=>`<button role="tab" aria-selected="${r===curRange}" class="${r===curRange?'on':''}" data-action="range" data-range="${r}">${{day:'日',week:'周',month:'月',year:'年'}[r]}</button>`).join('')}
+    </div>
+    <div class="sumrow">
+      <div class="sum"><div class="v">${m.total}</div><div class="k">${m.label}总次数</div></div>
+      <div class="sum"><div class="v">${avg}</div><div class="k">日均(近${m.len===1?'1':m.len}天)</div></div>
+      <div class="sum"><div class="v">${delta}</div><div class="k">较上期</div></div>
+    </div>
+    <div class="panel"><h4>${m.cap}</h4><div class="cap">${m.label} · 全部约定合计</div>${chart}</div>
+    ${m.chart==='day' ? '' : `<div class="panel"><h4>都是什么念头</h4><div class="cap">${m.label}分布</div>${distBars(dist)}</div>`}
+    <p class="calm-note">${ic('eye')}每一次记录,都是一次觉察。</p>`;
+}
+function rangeStart(){
+  switch(curRange){
+    case 'day': return today;
+    case 'week': return weekMonday(today);
+    case 'month': return dAgo(29);
+    case 'year': return dAgo(364);
+  }
+}
+function renderThoughts(){
+  const el = document.getElementById('scr-thoughts');
+  let html = `
+    <div class="pagehead"><span class="t">我的约定</span>
+      <button class="iconbtn" data-action="open-sheet" aria-label="添加约定">${ic('plus',22)}</button></div>`;
+  thoughts.forEach(th=>{
+    const total = records.filter(r=>r.t===th.id).length;
+    const days = new Set(records.filter(r=>r.t===th.id).map(r=>key(new Date(r.ts)))).size;
+    html += `
+    <div class="trow ${th.paused?'paused':''}" data-action="open-detail" data-thought="${th.id}" role="button" tabindex="0" aria-label="打开 ${th.name} 详情">
+      <span class="avatar" style="background:${colSoft(th.ci)};color:${colVar(th.ci)}">${th.name.slice(2,3)}</span>
+      <div class="mid"><div class="name">${th.name}</div>
+        <div class="meta">累计 ${total} 次 · ${days} 天有记录</div></div>
+      <label class="switch" title="${th.paused?'恢复记录':'暂停记录'}">
+        <input type="checkbox" data-action="pause" data-thought="${th.id}" ${th.paused?'':'checked'} aria-label="${th.paused?'恢复':'暂停'} ${th.name}">
+        <span class="knob"></span>
+      </label>
+      <span style="color:var(--faint)">${ic('chevR',20)}</span>
+    </div>`;
+  });
+  html += `<p class="calm-note" style="margin-top:8px">左滑概念:关闭开关即"暂停"该约定,历史数据仍保留。</p>`;
+  el.innerHTML = html;
+}
+function renderDetail(){
+  const el = document.getElementById('scr-detail');
+  const th = thoughts.find(t=>t.id===detailId); if(!th) return;
+  const total = records.filter(r=>r.t===th.id).length;
+  const days = new Set(records.filter(r=>r.t===th.id).map(r=>key(new Date(r.ts)))).size;
+  const monday = weekMonday(today); const vals=[], labs=[], WK=['一','二','三','四','五','六','日']; let hl=0;
+  for(let i=0;i<7;i++){ const d=new Date(monday.getTime()+i*DAY);
+    vals.push(d<=today?countDay(d,th.id):0); labs.push(WK[i]);
+    if(key(d)===key(today)) hl=i; }
+  const recent = records.filter(r=>r.t===th.id).sort((a,b)=>b.ts-a.ts).slice(0,6);
+  const fmt = ts => { const d=new Date(ts), t=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const diff=Math.round((dayStart(today)-dayStart(d))/DAY);
+    return diff===0?`今天 ${t}` : diff===1?`昨天 ${t}` : `${d.getMonth()+1}月${d.getDate()}日 ${t}`; };
+  el.innerHTML = `
+    <div class="navbar">
+      <button class="backbtn" data-action="back" aria-label="返回">${ic('chevL',22)}</button>
+      <span class="avatar" style="width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:${colSoft(th.ci)};color:${colVar(th.ci)};font-weight:700">${th.name.slice(2,3)}</span>
+      <div><div style="font-size:16.5px;font-weight:700;color:var(--text)">${th.name}</div>
+      <div style="font-size:12px;color:var(--muted)">累计 ${total} 次 · ${days} 天有记录</div></div>
+    </div>
+    <div class="panel"><h4>本周每天次数</h4><div class="cap">今天高亮</div>${barChartSVG(vals,labs,hl,colVar(th.ci))}</div>
+    <div class="panel"><h4>过去 12 个月</h4><div class="cap">觉察足迹</div>${heatSVG(th.id)}
+      <div class="legend">少<i style="background:var(--heat0)"></i><i style="background:var(--heat1)"></i><i style="background:var(--heat2)"></i><i style="background:var(--heat3)"></i><i style="background:var(--heat4)"></i>多</div></div>
+    <div class="panel"><h4>最近觉察时刻</h4><div class="cap">它浮现的瞬间</div>
+      <ul class="timeline">${recent.map(r=>`<li><span class="d">${fmt(r.ts)}</span><span class="w">觉察一次</span><span class="eye">${ic('eye')}</span></li>`).join('')}</ul></div>
+    <button class="dangerlink" data-action="archive">归档此约定(不再显示,数据保留)</button>`;
+}
+
+/* ================= 交互 ================= */
+function showScreen(s){
+  curScreen = s;
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+  document.getElementById('scr-'+s).classList.add('active');
+  document.getElementById('scr-'+s).scrollTop = 0;
+  document.getElementById('tabbar').style.display = (s==='detail')?'none':'flex';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.go===s));
+  document.querySelectorAll('#toolbar .pill[data-go]').forEach(p=>p.classList.toggle('on', p.dataset.go===s));
+  if(s==='home') renderHome();
+  if(s==='stats') renderStats();
+  if(s==='thoughts') renderThoughts();
+  if(s==='detail') renderDetail();
+}
+function refreshAll(){
+  if(curScreen==='home') renderHome();
+  if(curScreen==='stats') renderStats();
+  if(curScreen==='detail') renderDetail();
+}
+function showSnack(text){
+  const s = document.getElementById('snack');
+  document.getElementById('snackText').textContent = text;
+  s.classList.add('show');
+  clearTimeout(snackTimer);
+  snackTimer = setTimeout(()=>s.classList.remove('show'), 5000);
+}
+function doCount(id, x, y){
+  const th = thoughts.find(t=>t.id===id); if(!th || th.paused) return;
+  const rec = {t:id, ts:Date.now()};
+  records.push(rec); lastAdded = rec;
+  // 涟漪
+  const card = document.querySelector(`.tcard[data-thought="${id}"]`);
+  if(card){
+    const r = document.createElement('span'); r.className='ripple';
+    const rect = card.getBoundingClientRect();
+    r.style.width = r.style.height = '160px';
+    r.style.left = ((x??(rect.left+rect.width/2))-rect.left-80)+'px';
+    r.style.top  = ((y??(rect.top+rect.height/2))-rect.top-80)+'px';
+    card.appendChild(r); setTimeout(()=>r.remove(), 600);
+    const num = card.querySelector(`[data-cnt="${id}"]`);
+    if(num){ num.textContent = countDay(today, id); num.classList.remove('pop'); void num.offsetWidth; num.classList.add('pop'); }
+    const tn = document.getElementById('todayNum');
+    if(tn) tn.innerHTML = `${countDay(today)}<small>次 · 今日觉察</small>`;
+  }
+  if(curScreen!=='home') refreshAll();   // 计数只发生在首页,原地更新避免抹掉动画
+  showSnack(`已觉察 1 次 ·「${th.name}」`);
+}
+document.getElementById('snackUndo').addEventListener('click', ()=>{
+  if(lastAdded){ const i=records.indexOf(lastAdded); if(i>-1) records.splice(i,1); lastAdded=null; }
+  document.getElementById('snack').classList.remove('show');
+  refreshAll(); if(curScreen!=='home') showScreen('home');
+});
+
+document.getElementById('phone').addEventListener('click', e=>{
+  const t = e.target.closest('[data-action],[data-go]');
+  if(!t) return;
+  const act = t.dataset.action, go = t.dataset.go;
+  if(go){ showScreen(go); return; }
+  if(act==='count'){ doCount(t.dataset.thought, e.clientX, e.clientY); }
+  if(act==='range'){ curRange = t.dataset.range; renderStats(); }
+  if(act==='open-detail'){ detailId = t.dataset.thought; showScreen('detail'); }
+  if(act==='open-sheet'){ openSheet(true); }
+  if(act==='close-sheet'){ openSheet(false); }
+  if(act==='back'){ showScreen('thoughts'); }
+  if(act==='archive'){ showSnack('原型示意:归档后卡片隐藏,历史数据保留'); }
+  if(act==='add-thought'){
+    const inp = document.getElementById('newName');
+    const name = inp.value.trim();
+    if(!name){ inp.focus(); return; }
+    thoughts.push({id:'t'+Date.now(), name, ci:(thoughts.length%4)+1, created:0, paused:false});
+    inp.value=''; openSheet(false); renderThoughts();
+    showSnack('已添加约定 ·「'+name+'」');
+  }
+  if(act==='pause'){
+    const th = thoughts.find(x=>x.id===t.dataset.thought);
+    if(th){ th.paused = !t.checked; renderThoughts(); if(curScreen==='thoughts'){} 
+      showSnack(th.paused?'已暂停记录 · 历史数据保留':'已恢复记录'); renderHome(); }
+  }
+});
+// 键盘可达性:卡片 Enter/Space 触发
+document.getElementById('phone').addEventListener('keydown', e=>{
+  if((e.key==='Enter'||e.key===' ') && e.target.matches('[role="button"]')){ e.preventDefault(); e.target.click(); }
+});
+function openSheet(open){
+  document.getElementById('sheet').classList.toggle('open', open);
+  if(open) setTimeout(()=>document.getElementById('newName').focus(), 320);
+}
+// 建议 chips
+document.getElementById('chips').innerHTML = SUGGEST.map(s=>`<button class="fchip" data-sug="${s}">${s}</button>`).join('');
+document.getElementById('chips').addEventListener('click', e=>{
+  const b = e.target.closest('[data-sug]'); if(b) document.getElementById('newName').value = b.dataset.sug;
+});
+// 工具栏:主题
+const themeBtn = document.getElementById('themeBtn');
+function setTheme(t){ document.documentElement.dataset.theme = t;
+  document.getElementById('themeIc').innerHTML = ic(t==='dark'?'sun':'moon',17); }
+themeBtn.addEventListener('click', ()=> setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
+setTheme('light');
+
+// Esc 关闭弹层
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') openSheet(false); });
+
+/* 初始渲染 */
+renderHome(); renderStats(); renderThoughts(); renderDetail();
+
+/* URL 参数直达: ?screen=stats&range=week&theme=dark&sheet=1 (便于分享与截图) */
+const qp = new URLSearchParams(location.search);
+if(qp.get('theme')) setTheme(qp.get('theme'));
+if(qp.get('screen')) showScreen(qp.get('screen'));
+if(qp.get('range')){ curRange = qp.get('range'); if(curScreen==='stats') renderStats(); }
+if(qp.get('sheet')) openSheet(true);
+</script>
+</body>
+</html>

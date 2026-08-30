@@ -1,0 +1,35 @@
+/* ============================================================
+ * 07-page-detail.css — 念头详情页专属样式
+ * 管:顶部返回栏(含改名铅笔)、最近记录时间线(可删单条)、
+ *     归档/恢复/删除按钮。
+ * 详情页隐藏 Tab 栏(js/16-app.js 控制),用返回按钮回上一页。
+ * ============================================================ */
+
+/* 顶部:返回圆钮 + 符号圆 + 名称与累计;铅笔钮靠右,点开重命名 */
+.navbar{display:flex; align-items:center; gap:12px; margin-bottom:18px}
+.navbar > div{flex:1; min-width:0}
+.backbtn{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--text); flex:none}
+.editbtn{width:40px;height:40px;border-radius:50%;background:var(--primary-soft);color:var(--primary);
+  display:flex;align-items:center;justify-content:center;flex:none;transition:transform .15s}
+.editbtn:active{transform:scale(.9)}
+
+/* 最近觉察时刻:虚线分隔的简单时间线;每条末尾有删除小钮(删错可撤销) */
+.timeline{list-style:none}
+.timeline li{display:flex; gap:12px; padding:9px 0; border-bottom:1px dashed var(--border); font-size:13.5px; align-items:center}
+.timeline li:last-child{border-bottom:none}
+.timeline .d{color:var(--muted); width:86px; flex:none}    /* 日期 + 时刻 */
+.timeline .w{color:var(--text); flex:1}                    /* 文案「觉察一次」 */
+.timeline .eye{color:var(--accent-text); display:flex; align-items:center}
+.timeline .eye .ic{width:15px;height:15px}
+.delrec{flex:none; width:30px; height:30px; border-radius:50%; color:var(--faint);
+  display:flex; align-items:center; justify-content:center; transition:color .15s, background .15s}
+.delrec:active{color:var(--danger); background:var(--primary-soft)}
+
+/* 归档按钮:红色只允许出现在这种"移出主列表"的操作上(设计原则:日常界面无羞耻感) */
+.dangerlink{width:100%; text-align:center; color:var(--danger); font-size:13.5px; font-weight:600;
+  padding:14px 0; border-radius:16px; border:1px dashed var(--border-strong); margin-top:4px}
+
+/* 恢复按钮:已归档的念头在详情页里的"撤销归档",用主色(正向操作,不用红) */
+.restorelink{width:100%; text-align:center; color:var(--primary); font-size:13.5px; font-weight:600;
+  padding:14px 0; border-radius:16px; border:1px dashed var(--border-strong); margin-top:4px}

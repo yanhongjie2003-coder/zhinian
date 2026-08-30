@@ -1,0 +1,8 @@
+# ---- 系统垃圾文件 ----
+Thumbs.db
+Desktop.ini
+*.log
+
+# ---- 编辑器/工具本地文件 ----
+.zcode/
+.vscode/

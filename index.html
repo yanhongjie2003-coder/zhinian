@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>止念 · 念头计数器</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7C3AED">
+<link rel="icon" href="icons/icon-192.png">
+
+<!-- 字体:Lora(数字/标题,衬线)+ Noto Sans SC(正文) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ========== 样式:按编号顺序引入(编号即依赖顺序) ========== -->
+<link rel="stylesheet" href="css/01-tokens.css">          <!-- 颜色变量 -->
+<link rel="stylesheet" href="css/02-base.css">            <!-- 基础布局:App容器/Tab栏 -->
+<link rel="stylesheet" href="css/03-components.css">      <!-- 通用小组件 -->
+<link rel="stylesheet" href="css/04-page-home.css">       <!-- 记录页 -->
+<link rel="stylesheet" href="css/05-page-stats.css">      <!-- 统计页 -->
+<link rel="stylesheet" href="css/06-page-thoughts.css">   <!-- 念头管理页 -->
+<link rel="stylesheet" href="css/07-page-detail.css">     <!-- 念头详情页 -->
+<link rel="stylesheet" href="css/08-page-settings.css">   <!-- 设置页 -->
+<link rel="stylesheet" href="css/09-sheet.css">           <!-- 底部弹层(添加/确认) -->
+<link rel="stylesheet" href="css/10-snackbar.css">        <!-- 提示条 -->
+</head>
+<body>
+
+<!-- ================= App 本体(手机上全屏,电脑上居中成手机宽度) ================= -->
+<div class="app" id="app">
+
+  <!-- 五个页面容器:里面的内容由 js/05~10 各自的页面文件动态渲染 -->
+  <section class="screen active" id="scr-home"></section>     <!-- 记录(首页) -->
+  <section class="screen" id="scr-stats"></section>           <!-- 统计 -->
+  <section class="screen" id="scr-thoughts"></section>        <!-- 念头管理 -->
+  <section class="screen no-pad-b" id="scr-detail"></section> <!-- 念头详情 -->
+  <section class="screen no-pad-b" id="scr-archive"></section><!-- 归档列表 -->
+  <section class="screen" id="scr-settings"></section>        <!-- 设置 -->
+
+  <!-- 添加念头:悬浮圆钮(念头页右下角,只在念头页显示,js/16-app.js 控制) -->
+  <button class="fab" id="addFab" data-action="open-sheet" aria-label="添加念头">
+    <span data-ic="plus"></span>
+  </button>
+
+  <!-- 底部 Tab 栏(详情页/归档页时会隐藏) -->
+  <nav class="tabbar" id="tabbar">
+    <button class="tab on" data-go="home"><span data-ic="tabcount"></span>记录</button>
+    <button class="tab" data-go="stats"><span data-ic="chart"></span>统计</button>
+    <button class="tab" data-go="thoughts"><span data-ic="cloud"></span>念头</button>
+    <button class="tab" data-go="settings"><span data-ic="sliders"></span>设置</button>
+  </nav>
+
+  <!-- 重命名:底部弹层(在详情页点铅笔钮打开,js/14-sheet.js 负责) -->
+  <div class="sheetwrap" id="renameSheet">
+    <div class="scrim" data-action="close-rename"></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="重命名">
+      <div class="grab"></div>
+      <h3>改个名字</h3>
+      <p class="cap">改名不影响已经记下的数据,统计原样跟着走。</p>
+      <input class="field" id="renameField" type="text" maxlength="24" aria-label="新的名字">
+      <div class="confirm-row" style="margin-top:16px">
+        <button class="btn plain" data-action="close-rename">取消</button>
+        <button class="btn" data-action="save-rename">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加念头:底部弹层(默认藏在屏幕下方,js/14-sheet.js 负责开关) -->
+  <div class="sheetwrap" id="sheet">
+    <div class="scrim" data-action="close-sheet"></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="添加念头">
+      <div class="grab"></div>
+      <h3>写下一个念头</h3>
+      <p class="cap">怎么写都行,比如"不要抱怨",也可以是"一开口就想打断别人"。写下来不是为了忍住,而是为了在它再次浮现时,认得出它。</p>
+      <input class="field" id="newName" type="text" placeholder="例如:不要想过去的事" maxlength="24" aria-label="念头名称">
+      <div class="chips" id="chips"></div>
+      <button class="btn" data-action="add-thought"><span data-ic="plus"></span>添加念头</button>
+    </div>
+  </div>
+
+  <!-- 通用确认弹窗(恢复/测试数据/重置等危险操作前弹,js/14-sheet.js 负责) -->
+  <div class="sheetwrap" id="confirm">
+    <div class="scrim" data-action="close-confirm"></div>
+    <div class="sheet" role="alertdialog" aria-modal="true" aria-label="确认操作">
+      <div class="grab"></div>
+      <h3 id="confirmTitle">确认</h3>
+      <p class="cap" id="confirmText"></p>
+      <div class="confirm-row">
+        <button class="btn plain" data-action="close-confirm">取消</button>
+        <button class="btn" id="confirmOk">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Snackbar 提示条(计数后弹出,5 秒内可撤销,js/12-13 负责) -->
+  <div class="snackbar" id="snack">
+    <span id="snackText"></span>
+    <button class="undo" id="snackUndo"><span data-ic="undo"></span>撤销</button>
+  </div>
+</div>
+
+<!-- ========== 脚本:按编号顺序引入,后面的文件能用前面定义的函数/数据 ========== -->
+<script src="js/01-icons.js"></script>        <!-- 图标 -->
+<script src="js/02-data.js"></script>        <!-- 演示数据 -->
+<script src="js/03-stats.js"></script>       <!-- 统计计算 -->
+<script src="js/04-charts.js"></script>      <!-- SVG 图表 -->
+<script src="js/05-page-home.js"></script>   <!-- 页面:记录 -->
+<script src="js/06-page-stats.js"></script>  <!-- 页面:统计 -->
+<script src="js/07-page-thoughts.js"></script><!-- 页面:念头管理 -->
+<script src="js/08-page-detail.js"></script> <!-- 页面:念头详情 -->
+<script src="js/09-storage.js"></script>     <!-- 数据:保存/恢复/导出/导入/重置 -->
+<script src="js/10-page-settings.js"></script><!-- 页面:设置 -->
+<script src="js/11-effects.js"></script>     <!-- 效果:涟漪/数字弹跳 -->
+<script src="js/12-snackbar.js"></script>    <!-- 效果:提示条 -->
+<script src="js/13-counter.js"></script>     <!-- 功能:计数+撤销 -->
+<script src="js/14-sheet.js"></script>       <!-- 功能:弹层+确认窗 -->
+<script src="js/15-theme.js"></script>       <!-- 功能:深色模式 -->
+<script src="js/16-app.js"></script>         <!-- 总调度(必须最后加载) -->
+<script src="js/17-pwa.js"></script>         <!-- PWA注册(独立模块,离线/添加到主屏幕) -->
+</body>
+</html>

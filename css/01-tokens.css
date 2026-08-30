@@ -1,0 +1,42 @@
+/* ============================================================
+ * 01-tokens.css — 设计变量(全站的"调色盘")
+ * 所有颜色都以 --xxx 变量定义在这里,其他文件只写 var(--xxx)。
+ * 想换主题色,只改这一个文件,全站生效。
+ * ============================================================ */
+
+/* ---------- 浅色主题(默认) ---------- */
+:root{
+  --primary:#7C3AED; --on-primary:#FFFFFF; --primary-soft:rgba(124,58,237,.10);   /* 主色:正念紫 */
+  --accent:#059669; --accent-text:#047857; --accent-soft:rgba(5,150,105,.12);     /* 强调色:正念绿(连续天数/进步) */
+  --bg:#FAF5FF; --card:#FFFFFF;                                                   /* 背景/卡片(薰衣草微染) */
+  --text:#0F172A; --muted:#475569; --faint:#8A8AA3;                               /* 主文本/次文本/更弱文本 */
+  --border:#EFE7FC; --border-strong:#E2D6F8;                                      /* 描边分隔 */
+  --danger:#DC2626;                                                               /* 红色,仅用于"归档"类破坏性操作 */
+  --t1:#7C3AED; --t2:#0D9488; --t3:#D97706; --t4:#E11D48;                         /* 4条念头各自的专属色 */
+  --t1-soft:rgba(124,58,237,.12); --t2-soft:rgba(13,148,136,.12);
+  --t3-soft:rgba(217,119,6,.12); --t4-soft:rgba(225,29,72,.10);
+  --heat0:#F1E9FC; --heat1:#DCCBFA; --heat2:#BC9DF5; --heat3:#9A6FEE; --heat4:#7C3AED; /* 年热力图 5 档紫色阶 */
+  --scrim:rgba(23,16,40,.45);                                                     /* 弹层背后的半透明遮罩 */
+  --snack-bg:#241E33; --snack-text:#F4F0FF;                                       /* Snackbar 提示条 */
+  --shadow:0 10px 30px rgba(76,45,140,.10);                                       /* 卡片阴影 */
+  --tabbar-bg:rgba(255,255,255,.92);                                              /* Tab栏毛玻璃底色 */
+}
+
+/* ---------- 深色主题:html 标签带上 data-theme="dark" 时自动套用 ---------- */
+/* js/13-theme.js 只负责切换这个属性,颜色在这里全部换好 */
+[data-theme="dark"]{
+  --primary:#A78BFA; --on-primary:#241543; --primary-soft:rgba(167,139,250,.14);
+  --accent:#34D399; --accent-text:#6EE7B7; --accent-soft:rgba(52,211,153,.14);
+  --bg:#16141D; --card:#1F1B29;
+  --text:#F2EFFA; --muted:#A9A3BC; --faint:#6E6883;
+  --border:#2C2739; --border-strong:#3B3450;
+  --danger:#F87171;
+  --t1:#A78BFA; --t2:#2DD4BF; --t3:#FBBF24; --t4:#FB7185;
+  --t1-soft:rgba(167,139,250,.16); --t2-soft:rgba(45,212,191,.14);
+  --t3-soft:rgba(251,191,36,.14); --t4-soft:rgba(251,113,133,.14);
+  --heat0:#232030; --heat1:#3A2C5C; --heat2:#513C80; --heat3:#7348BE; --heat4:#8F6BE8;
+  --scrim:rgba(5,3,12,.60);
+  --snack-bg:#EDE7FB; --snack-text:#241E33;
+  --shadow:0 10px 30px rgba(0,0,0,.45);
+  --tabbar-bg:rgba(31,27,41,.92);
+}

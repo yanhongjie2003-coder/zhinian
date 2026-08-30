@@ -1,0 +1,58 @@
+/* ============================================================
+ * 02-base.css — 基础布局
+ * 管:全局重置、App 容器(.app)、页面切换(.screen)、底部 Tab 栏。
+ * 没有"手机壳/状态栏/手势条"——这就是 App 界面本身:
+ * 安卓手机浏览器/WebView 里打开是全屏;电脑浏览器里居中成手机宽度。
+ * 各页面内部自己的样式不在这里(见 04~07)。
+ * ============================================================ */
+
+/* ---------- 全局重置 ---------- */
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{
+  font-family:'Noto Sans SC','Microsoft YaHei',sans-serif;
+  background:var(--bg); color:var(--text);
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit}
+input{font-family:inherit}
+svg{display:block}
+.ic{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- App 容器 ----------
+ * 整个 App 的根:四个页面、Tab栏、弹层、提示条都叠在它里面。
+ * max-width 限成手机宽度:电脑上居中显示,手机上自然占满全屏。 */
+.app{
+  position:relative; width:100%; max-width:430px;
+  height:100vh; height:100dvh;             /* dvh:手机浏览器地址栏收起时也能占满 */
+  /* clip:彻底禁止这个壳被滚动(连 JS 的 scrollIntoView、输入框聚焦都不行)。
+   * 用 hidden 时输入框聚焦等场景会把整个壳滚走,出现"页面错位只能重载"的白屏;
+   * 不支持 clip 的老浏览器会忽略这行、沿用 hidden,不影响其他功能。 */
+  overflow:hidden; overflow:clip; background:var(--bg);
+  color-scheme:light;
+}
+[data-theme="dark"] .app{color-scheme:dark}
+
+/* 页面容器:四个 section 叠在一起,同一时刻只显示 .active 的那个 */
+/* js/14-app.js 的 showScreen() 负责切换 active */
+.screen{position:absolute; inset:0; overflow-y:auto; overflow-x:hidden;
+  padding:24px 20px 110px; display:none; scrollbar-width:none}
+.screen::-webkit-scrollbar{display:none}
+.screen.active{display:block; animation:screenIn .32s cubic-bezier(.2,.8,.3,1)}
+@keyframes screenIn{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+.screen.no-pad-b{padding-bottom:28px}
+
+/* ---------- 底部 Tab 栏 ---------- */
+.tabbar{position:absolute; left:0; right:0; bottom:0; z-index:30;
+  background:var(--tabbar-bg); backdrop-filter:blur(14px);
+  border-top:1px solid var(--border); display:flex; padding:8px 8px 14px}
+.tab{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:6px 0 2px; color:var(--muted); font-size:11px; border-radius:14px; min-height:48px; transition:color .2s}
+.tab .ic{width:23px;height:23px}
+.tab.on{color:var(--primary); font-weight:600}
+
+/* ---------- 无障碍:用户系统设置了"减少动态效果"时,关闭所有动画 ---------- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important; transition:none !important}
+}

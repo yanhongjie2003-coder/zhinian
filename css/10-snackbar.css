@@ -1,0 +1,19 @@
+/* ============================================================
+ * 10-snackbar.css — 底部提示条
+ * 「已觉察 1 次 · 撤销」,计数后从下往上浮入,5 秒后消失。
+ * 显隐逻辑在 js/10-snackbar.js:加/去掉 .show 类即可。
+ * 位置在 Tab 栏(bottom:92px)之上,不会遮住 Tab。
+ * ============================================================ */
+
+.snackbar{position:absolute; left:16px; right:16px; bottom:92px; z-index:40;
+  background:var(--snack-bg); color:var(--snack-text); border-radius:14px;
+  padding:13px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  font-size:13.5px; box-shadow:0 8px 26px rgba(0,0,0,.3);
+  transform:translateY(16px); opacity:0; pointer-events:none; transition:all .26s cubic-bezier(.2,.8,.3,1)}
+.snackbar.show{transform:none; opacity:1; pointer-events:auto}
+
+/* 右侧「撤销」按钮 */
+.snackbar .undo{display:flex; align-items:center; gap:5px; font-weight:700; color:var(--primary);
+  padding:8px 6px; font-size:13.5px; border-radius:8px}
+[data-theme="dark"] .snackbar .undo{color:#7C3AED}          /* 深色模式下提示条底色变浅,撤销改用深紫保证对比度 */
+.snackbar .undo .ic{width:16px;height:16px}

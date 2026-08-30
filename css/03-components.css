@@ -1,0 +1,26 @@
+/* ============================================================
+ * 03-components.css — 通用小组件
+ * 管:多个页面共用的样式:卡片、页面标题、chip徽章、按钮、
+ *     页面底部的"安静文案"。
+ * ============================================================ */
+
+/* 页面顶部:小日期 + 大标题(衬线体,日记般的平静感) */
+.h-date{font-size:13px; color:var(--muted); margin-bottom:4px}
+.h-title{font-family:'Lora','Noto Serif SC',Georgia,serif; font-size:25px; font-weight:600; color:var(--text); line-height:1.35; margin-bottom:18px}
+.h-title .dot{color:var(--primary)}
+
+/* chip 徽章:如首页的「连续 N 天」(正念绿) */
+.chip{display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px;
+  font-size:12.5px; font-weight:600; background:var(--accent-soft); color:var(--accent-text)}
+.chip .ic{width:14px;height:14px}
+
+/* 主按钮(全圆胶囊);.plain 中性版,.danger 红色版(仅确认破坏性操作) */
+.btn{display:inline-flex; align-items:center; gap:7px; background:var(--primary); color:var(--on-primary);
+  padding:13px 26px; border-radius:999px; font-size:14.5px; font-weight:600; transition:transform .15s, opacity .2s}
+.btn:active{transform:scale(.96)}
+.btn.plain{background:var(--bg); color:var(--text); border:1px solid var(--border-strong)}
+.btn.danger{background:var(--danger); color:#FFFFFF}
+
+/* 页面底部的安静文案(带小眼睛图标) */
+.calm-note{text-align:center; font-size:12.5px; color:var(--muted); padding:6px 0 2px; line-height:1.8}
+.calm-note .ic{width:14px;height:14px;display:inline-block;vertical-align:-2px;margin-right:4px;color:var(--accent)}

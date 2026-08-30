@@ -1,0 +1,49 @@
+/* ============================================================
+ * 09-sheet.css — 底部弹层(添加念头 + 通用确认弹窗,共用一套样式)
+ * 开关方式:给 .sheetwrap 加/去掉 .open 类(js/14-sheet.js),
+ * 加上后:遮罩淡入 + 面板从屏幕底部滑上来。
+ * ============================================================ */
+
+/* 包裹层:铺满 App;默认 visibility:hidden 让整块不可见也不可点 */
+.sheetwrap{position:absolute; inset:0; z-index:50; visibility:hidden}
+.sheetwrap.open{visibility:visible}
+
+/* 遮罩:点它关闭弹层(元素上绑了 data-action="close-sheet"/"close-confirm") */
+.scrim{position:absolute; inset:0; background:var(--scrim); opacity:0; transition:opacity .28s}
+.sheetwrap.open .scrim{opacity:1}
+
+/* 弹层面板:默认滑到屏幕下方(translateY 105%),打开时归位 */
+.sheet{position:absolute; left:0; right:0; bottom:0; background:var(--card);
+  border-radius:26px 26px 0 0; padding:12px 22px 34px; transform:translateY(105%);
+  transition:transform .32s cubic-bezier(.2,.9,.3,1); border-top:1px solid var(--border)}
+.sheetwrap.open .sheet{transform:none}
+
+/* 顶部的小横条(暗示可以下拉关闭) */
+.grab{width:40px;height:4px;border-radius:4px;background:var(--border-strong);margin:0 auto 16px}
+
+/* 弹层内的标题与说明 */
+.sheet h3{font-size:18px; font-weight:700; color:var(--text); margin-bottom:4px}
+.sheet .cap{font-size:12.5px; color:var(--muted); margin-bottom:16px; line-height:1.7}
+
+/* 名称输入框:聚焦时描边变主色 */
+.field{background:var(--bg); border:1.5px solid var(--border-strong); border-radius:14px;
+  padding:14px 16px; font-size:15px; color:var(--text); width:100%; outline:none; transition:border .2s}
+.field:focus{border-color:var(--primary)}
+.field::placeholder{color:var(--faint)}
+
+/* 空名称提交时的轻提醒:左右抖两下(js/14-sheet.js 的 nudgeEmpty() 加 .nudge 类)。
+ * 只抖动不标红——红色按设计原则只留给删除这类破坏性操作。 */
+@keyframes fieldNudge{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.field.nudge{animation:fieldNudge .35s ease}
+
+/* 建议chips:点一下就把文字填进输入框(事件在 js/14-sheet.js) */
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px}
+.fchip{padding:9px 14px; border-radius:999px; font-size:13px; background:var(--primary-soft);
+  color:var(--primary); font-weight:500; transition:all .2s; border:1px solid transparent}
+.fchip:hover{border-color:var(--primary)}
+.sheet .btn{width:100%; justify-content:center}             /* 底部主按钮拉通整行 */
+
+/* 确认弹窗(通用):取消 + 确认 两个并排按钮 */
+.confirm-row{display:flex; gap:10px; margin-top:4px}
+.confirm-row .btn{flex:1; justify-content:center; padding:13px 0}
