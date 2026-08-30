@@ -30,8 +30,9 @@ python serve.py 8128
 
 **安卓 APK**:仓库里有 `android/` WebView 壳工程,推送代码后 GitHub Actions 会自动打包:
 
-- 打开仓库的 **Actions** 页 → 选最近一次 "Android Build" → 下方 Artifacts 下载 `zhinian-debug-apk`
-- 推送 `v1.0.1` 这类 **v 开头的标签**时,会自动创建 Release 并挂上 APK,任何人都能直接下载
+- 直接下载:[Releases 页面](https://github.com/yanhongjie2003-coder/zhinian/releases/latest) 拿最新版
+- 也可以在仓库 **Actions** 页 → 选最近一次 "Android Build" → 下方 Artifacts 下载 `zhinian-debug-apk`
+- 推送 `v1.0.1` 这类 **v 开头的标签**时,会自动创建 Release 并挂上 APK
 
 APK 与网页版完全同源:构建时自动把仓库根目录的网页同步进壳里,数据同样只存在手机本地。
 
@@ -41,7 +42,8 @@ APK 与网页版完全同源:构建时自动把仓库根目录的网页同步进
 - 统计:日分布、周条形图、月折线图、年日历热力图,各念头占比,较上期变化
 - 念头:添加(带预设建议)、重命名、暂停、归档、恢复、删除(有确认)
 - 详情:单条念头的周图、年足迹、最近记录时间线,可以删掉单条记录
-- 设置:深色模式三选、备份/恢复、导出/导入 .json、测试数据、重置
+- 数据:自动保存,刷新不丢;手动备份快照、导出/导入 .json,换机不愁
+- 外观:深色模式三选(跟随系统/浅色/深色),记住偏好
 - 念头不会重复:添加和改名都会查重,撞名会温和提醒
 
 ## 隐私
@@ -58,13 +60,14 @@ APK 与网页版完全同源:构建时自动把仓库根目录的网页同步进
 | [docs/testing-cases.md](docs/testing-cases.md) | 用例执行记录 |
 | [docs/bug-list.csv](docs/bug-list.csv) | 缺陷清单(根因定位到文件行级) |
 | [docs/changelog.md](docs/changelog.md) | 更新日志 |
-| [docs/prototype.html](docs/prototype.html) | 最初的单文件原型(留档) |
+| [android/](android/) · [.github/workflows/](.github/workflows/) | WebView 壳工程与 APK 自动打包脚本 |
 
 ## 后续计划
 
+- 正式签名的 release 包(现在的 APK 是 debug 签名,自用无碍)
+- 单条记录补记一句备注
 - 字体本地化(摆脱 CDN)
 - 添加念头自选颜色 / 图标
-- 安卓 APK 打包
 
 ## License
 

@@ -4,11 +4,18 @@
 
 ## [Unreleased]
 
+### 新增
+
+- 安卓壳工程 `android/`:WebView 壳(WebViewAssetLoader 本地资源,离线无网络权限)
+- GitHub Actions 自动打包:推送构建 debug APK(Artifacts 可下载);推 `v*` 标签自动发 Release 并挂 APK
+- 构建时自动把仓库根目录网页同步进壳,网页只维护一份
+
 ### 计划中
 
+- 正式签名的 release 包(现为 debug 签名)
+- 单条记录补记一句备注
 - 字体本地化(摆脱 CDN)
 - 添加念头自选颜色 / 图标
-- 安卓 APK 打包(WebView 封装,或按设计文档用 Jetpack Compose 重写)
 
 ## [1.0.1] - 2026-08-31
 
