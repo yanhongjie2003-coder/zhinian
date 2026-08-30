@@ -10,6 +10,7 @@
 - 安卓壳工程 `android/`:WebView 壳(WebViewAssetLoader 本地资源,离线无网络权限)
 - GitHub Actions 自动打包:推送构建 debug APK(Artifacts 可下载);推 `v*` 标签自动发 Release 并挂 APK
 - 构建时自动把仓库根目录网页同步进壳,网页只维护一份
+- **签名固定化**:`android/keystore/zhinian-signing.p12`(自签调试级)入仓库,debug/release 统一签名;此前 Actions 的 keystore 缓存从未生效,每次构建生成一次性密钥导致无法覆盖安装(1.0.3 起修复)
 
 ### 计划中
 
