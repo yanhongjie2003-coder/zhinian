@@ -51,8 +51,9 @@ public class MainActivity extends Activity {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                // 页面刚载入时可能还没收到 insets 事件,把已知的留白补注入一次
-                applyInsets(lastTop, lastBottom);
+                // 关键:insets 事件通常在页面加载前就到,第一次注入会落在空页上被冲掉;
+                // 页面就绪后必须无条件补注入一次(不能走"值没变就跳过"的判断)。
+                if (lastTop >= 0) inject(lastTop, lastBottom);
             }
         });
 
@@ -71,11 +72,16 @@ public class MainActivity extends Activity {
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
-    /* 把状态栏(上)与手势条(下)高度写进网页的 CSS 变量;值没变就不重复注入 */
+    /* 收到系统栏高度:记录下来,页面就绪前先试着注入,onPageFinished 再强制补一次 */
     private void applyInsets(int top, int bottom) {
         if (top == lastTop && bottom == lastBottom) return;
         lastTop = top;
         lastBottom = bottom;
+        inject(top, bottom);
+    }
+
+    /* 无条件把状态栏(上)与手势条(下)高度写进网页的 CSS 变量 */
+    private void inject(int top, int bottom) {
         webView.post(() -> {
             if (webView == null) return;
             webView.evaluateJavascript(
