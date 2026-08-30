@@ -6,17 +6,33 @@ android {
     namespace 'com.zhinian.app'
     compileSdk 35
 
+    // 固定签名密钥(入仓库):所有构建签名一致,覆盖安装不丢数据。
+    // 自签调试级密钥,仅用于自用包;上架商店前需换成正式密钥。
+    signingConfigs {
+        zhinian {
+            storeFile file('../keystore/zhinian-signing.p12')
+            storePassword 'zhinian2026'
+            keyAlias 'zhinian'
+            keyPassword 'zhinian2026'
+            storeType 'PKCS12'
+        }
+    }
+
     defaultConfig {
         applicationId "com.zhinian.app"
         minSdk 26          // Android 8.0+(2017)
         targetSdk 35
-        versionCode 3
-        versionName "1.0.2"
+        versionCode 4
+        versionName "1.0.3"
     }
 
     buildTypes {
+        debug {
+            signingConfig signingConfigs.zhinian
+        }
         release {
             minifyEnabled false
+            signingConfig signingConfigs.zhinian
         }
     }
 
