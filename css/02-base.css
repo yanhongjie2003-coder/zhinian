@@ -7,6 +7,12 @@
  * ============================================================ */
 
 /* ---------- 全局重置 ---------- */
+/* 安全区:标准 env() 取系统栏高度(viewport-fit=cover 已在 index.html 设置);
+ * APK 里 WebView 若 env 返回 0,壳会注入同名变量兜底(见 MainActivity) */
+:root{
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+}
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-font-smoothing:antialiased}
 body{
