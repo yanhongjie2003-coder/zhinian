@@ -21,7 +21,7 @@ jobs:
         run: |
           rm -rf android/app/src/main/assets
           mkdir -p android/app/src/main/assets
-          cp -r index.html css js android/app/src/main/assets/
+          cp -r index.html css js fonts android/app/src/main/assets/
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -61,7 +61,7 @@ jobs:
         run: |
           rm -rf android/app/src/main/assets
           mkdir -p android/app/src/main/assets
-          cp -r index.html css js android/app/src/main/assets/
+          cp -r index.html css js fonts android/app/src/main/assets/
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4

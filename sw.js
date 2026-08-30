@@ -6,7 +6,7 @@
  * 改了代码想让手机上的缓存更新:把下面的版本号 v1 改成 v2 即可。
  * ============================================================ */
 
-const CACHE = 'zhinian-v2';
+const CACHE = 'zhinian-v3';
 
 /* App 外壳:安装时就缓存好这些,保证离线能打开 */
 const SHELL = [
@@ -15,6 +15,7 @@ const SHELL = [
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './css/fonts.css',
   './css/01-tokens.css',
   './css/02-base.css',
   './css/03-components.css',

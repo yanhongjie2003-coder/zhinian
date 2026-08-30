@@ -8,12 +8,10 @@
 <meta name="theme-color" content="#7C3AED">
 <link rel="icon" href="icons/icon-192.png">
 
-<!-- 字体:Lora(数字/标题,衬线)+ Noto Sans SC(正文) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- 字体:本地化(Lora + Noto Sans SC 的 woff2 在 fonts/,清单见 css/fonts.css),不访问任何 CDN -->
 
 <!-- ========== 样式:按编号顺序引入(编号即依赖顺序) ========== -->
+<link rel="stylesheet" href="css/fonts.css">              <!-- 本地字体 @font-face 清单 -->
 <link rel="stylesheet" href="css/01-tokens.css">          <!-- 颜色变量 -->
 <link rel="stylesheet" href="css/02-base.css">            <!-- 基础布局:App容器/Tab栏 -->
 <link rel="stylesheet" href="css/03-components.css">      <!-- 通用小组件 -->

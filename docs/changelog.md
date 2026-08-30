@@ -6,6 +6,7 @@
 
 ### 新增
 
+- **字体本地化,摆脱 CDN**:Lora + Noto Sans SC 的 108 个 woff2 分块(4.5MB)存入仓库 `fonts/`,由 `css/fonts.css` 提供 @font-face(保留 unicode-range 按需分块);页面不再访问 fonts.googleapis.com / gstatic,APK 内也能用上真字体
 - 安卓壳工程 `android/`:WebView 壳(WebViewAssetLoader 本地资源,离线无网络权限)
 - GitHub Actions 自动打包:推送构建 debug APK(Artifacts 可下载);推 `v*` 标签自动发 Release 并挂 APK
 - 构建时自动把仓库根目录网页同步进壳,网页只维护一份
@@ -14,7 +15,6 @@
 
 - 正式签名的 release 包(现为 debug 签名)
 - 单条记录补记一句备注
-- 字体本地化(摆脱 CDN)
 - 添加念头自选颜色 / 图标
 
 ## [1.0.1] - 2026-08-31
