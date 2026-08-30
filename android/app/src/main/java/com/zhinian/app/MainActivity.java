@@ -1,6 +1,7 @@
 package com.zhinian.app;
 
 import android.app.Activity;
+import android.graphics.Insets;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.WindowInsets;
